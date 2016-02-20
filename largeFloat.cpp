@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <cassert>
 
 using namespace std;
 
@@ -79,53 +80,100 @@ public:
 			}
 		}
 	}
+	int isAbsLargerThan(const largeFloat& lf) const{
+		if (power > lf.power) {
+			return 1;
+		}
+		else if (power < lf.power) {
+			return -1;
+		}
+		//power equal
+		int i, j;
+		for (i = 0, j = 0; i < number.size() && j < lf.number.size(); i++, j++) {
+			if (number[i] > number[j]) {
+				return 1;
+			}
+			else if (number[i] < number[j]) {
+				return -1;
+			}
+		}
+		if (i < number.size()) {
+			return 1;
+		}
+		else if (j < lf.number.size()) {
+			return -1;
+		}
+		return 0;
+	}
 	~largeFloat() {
 	}
 	void operator += (const largeFloat& lf) {
 		int i, j;
 		//determine the digit where addition starts
-		if (power >= lf.power) {
+		int sign, lfSign;
+		if (isAbsLargerThan(lf) >= 0) {
 			i = sigDigit - 1;
 			j = sigDigit - (power - lf.power) - 1;
+			sign = 1;
+			lfSign = isPositive == lf.isPositive ? 1 : -1;
 		}
 		else {
 			i = sigDigit - (lf.power - power) - 1;
 			j = sigDigit - 1;
 			power = lf.power;
+			lfSign = 1;
+			sign = isPositive == lf.isPositive ? 1 : -1;
+			isPositive = lf.isPositive;
 		}
 		char overFlow = 0;
 		while (i >= 0 && j >= 0) {
-			number[i] += lf.number[j] - '0' + overFlow;
+			number[i] = sign*(number[i]-'0') + lfSign*(lf.number[j]-'0') + '0' + overFlow;
 			overFlow = 0;
 			while (number[i] > '9') {
 				number[i] -= 10;
-				overFlow++;
+				overFlow ++;
+			}
+			if (number[i] < '0') {
+				number[i] += 10;
+				overFlow--;
 			}
 			i--;
 			j--;
 		}
 		//if extra number in j
 		while (j >= 0) {
+			assert(lfSign == 1);
 			number.insert(0, 1, number[j] + overFlow);
 			overFlow = 0;
 			if (number[0] > '9') {
 				number[0] -= 10;
 				overFlow++;
 			}
+			if (number[i] < '0') {
+				number[i] += 10;
+				overFlow--;
+			}
 		}
 		//if overflow still greater than 0 after both numbers have been added
-		while (overFlow > 0) {
+		while (overFlow != 0) {
 			if (i == 0) {
+				assert(overFlow > 0);
 				number.insert(0, 1, overFlow + '0');
 				overFlow = 0;
 			}
 			else {
+				assert(sign == 1);
 				number[i] += overFlow;
 				overFlow = 0;
 				if (number[i] > '9') {
 					number[i] -= 10;
 					overFlow++;
 				}
+				if (number[i] < '0') {
+					number[i] += 10;
+					overFlow--;
+				}
+				i--;
 			}
 			power++;
 		}
