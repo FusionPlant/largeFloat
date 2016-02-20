@@ -21,6 +21,7 @@ public:
 		isPositive = true;
 		power = 0;
 		for (int i = 0; i < str.length(); i++) {
+			// have read enough significant digits
 			if (sdCount >= significantDigits) {
 				int loc = str.find_first_of('.', i);
 				if (loc != string::npos) {
@@ -33,8 +34,8 @@ public:
 				iss >> afterExp;
 				power += afterExp;
 				return;
-				return;
 			}
+			// parser
 			switch (str[i]) {
 			case '.':
 				beforeDot = false;
@@ -82,6 +83,7 @@ public:
 	}
 	void operator += (const largeFloat& lf) {
 		int i, j;
+		//determine the digit where addition starts
 		if (power >= lf.power) {
 			i = sigDigit - 1;
 			j = sigDigit - (power - lf.power) - 1;
@@ -102,6 +104,7 @@ public:
 			i--;
 			j--;
 		}
+		//if extra number in j
 		while (j >= 0) {
 			number.insert(0, 1, number[j] + overFlow);
 			overFlow = 0;
@@ -110,6 +113,7 @@ public:
 				overFlow++;
 			}
 		}
+		//if overflow still greater than 0 after both numbers have been added
 		while (overFlow > 0) {
 			if (i == 0) {
 				number.insert(0, 1, overFlow + '0');
@@ -123,6 +127,7 @@ public:
 					overFlow++;
 				}
 			}
+			power++;
 		}
 	}
 	string str() {
