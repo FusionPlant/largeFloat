@@ -5,6 +5,8 @@
 
 using namespace std;
 
+#define MAX_POWER_DIGIT 29
+
 class largeFloat {
 public:
 	largeFloat(const string & str, int significantDigits = 100) {
@@ -20,7 +22,18 @@ public:
 		power = 0;
 		for (int i = 0; i < str.length(); i++) {
 			if (sdCount >= significantDigits) {
-				break;
+				int loc = str.find_first_of('.', i);
+				if (loc != string::npos) {
+					power += loc - i;
+					i = loc;
+				}
+				loc = str.find_first_of("eEfE", i);
+				int afterExp;
+				istringstream iss(str.substr(loc, MAX_POWER_DIGIT));
+				iss >> afterExp;
+				power += afterExp;
+				return;
+				return;
 			}
 			switch (str[i]) {
 			case '.':
@@ -32,7 +45,7 @@ public:
 				}
 				else {
 					int afterExp;
-					istringstream iss(str.substr(i, 30));
+					istringstream iss(str.substr(i, MAX_POWER_DIGIT));
 					iss >> afterExp;
 					power += afterExp;
 					return;
@@ -57,7 +70,7 @@ public:
 				}
 				else {
 					int afterExp;
-					istringstream iss(str.substr(i, 30));
+					istringstream iss(str.substr(i, MAX_POWER_DIGIT));
 					iss >> afterExp;
 					power += afterExp;
 					return;
